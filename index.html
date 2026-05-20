@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Canlı Kapalıçarşı Altın Portföy Paneli</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: #fff; padding: 20px; text-align: center; margin: 0; }
+        .container { max-width: 750px; margin: 30px auto; padding: 25px; background: #1e1e1e; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); border: 1px solid #2d2d2d; }
+        h1 { color: #f1c40f; margin-bottom: 5px; font-size: 1.8rem; }
+        .live-indicator { display: inline-block; width: 10px; height: 10px; background: #2ecc71; border-radius: 50%; margin-right: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+        
+        .total-box { background: linear-gradient(135deg, #1a252f, #2c3e50); padding: 25px; border-radius: 12px; margin: 20px 0; border: 2px solid #f1c40f; }
+        .total-title { font-size: 0.9rem; letter-spacing: 1px; color: #f1c40f; font-weight: bold; }
+        .total-price { font-size: 3rem; font-weight: bold; color: #2ecc71; margin-top: 10px; font-family: monospace; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 14px 15px; text-align: left; border-bottom: 1px solid #2d2d2d; }
+        th { background-color: #f1c40f; color: #000; font-weight: bold; font-size: 0.9rem; }
+        tr:hover { background-color: #252525; }
+        
+        input[type="number"] { width: 95px; padding: 8px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: bold; }
+        input[type="number"]:focus { border-color: #f1c40f; outline: none; background: #333; }
+        .money { font-weight: bold; font-family: monospace; font-size: 1.1rem; text-align: right; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1><span class="live-indicator"></span> Kapalıçarşı Canlı Portföy Paneli</h1>
+    <p style="color: #aaa; margin: 0; font-size: 0.85rem;">Güncel portföy miktarları başlangıç değeri olarak kod içerisine sabitlenmiştir.</p>
+
+    <div class="total-box">
+        <div class="total-title">ANLIK TOPLAM SERVET (BOZDURMA / ALIŞ)</div>
+        <div class="total-price" id="toplamServet">₺0,00</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Altın Türü</th>
+                <th>Elindeki Miktar</th>
+                <th class="text-right">Canlı Alış (Birim)</th>
+                <th class="text-right">Toplam Değer</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Has Altın (24 Ayar)</td>
+                <td><input type="number" id="input-has" value="158.78" step="0.01" oninput="hesapla()"> gr</td>
+                <td class="money" id="price-has">₺0,00</td>
+                <td class="money" id="total-has">₺0,00</td>
+            </tr>
+            <tr>
+                <td>Gram Altın</td>
+                <td><input type="number" id="input-gram" value="227" step="0.01" oninput="hesapla()"> gr</td>
+                <td class="money" id="price-gram">₺0,00</td>
+                <td class="money" id="total-gram">₺0,00</td>
+            </tr>
+            <tr>
+                <td>22 Ayar Bilezik</td>
+                <td><input type="number" id="input-bilezik" value="106.16" step="0.01" oninput="hesapla()"> gr</td>
+                <td class="money" id="price-bilezik">₺0,00</td>
+                <td class="money" id="total-bilezik">₺0,00</td>
+            </tr>
+            <tr>
+                <td>Çeyrek Eski</td>
+                <td><input type="number" id="input-ceyrek" value="13" step="1" oninput="hesapla()"> adet</td>
+                <td class="money" id="price-ceyrek">₺0,00</td>
+                <td class="money" id="total-ceyrek">₺0,00</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    let canlıFiyatlar = { has: 0, gram: 0, bilezik22: 0, ceyrek_eski: 0 };
+
+    // Sitenin canlı soket sunucusu
+    const socket = io("https://socket.anlikaltinfiyatlari.com", {
+        path: "/sio/p7013/socket.io",
+        transports: ["websocket"]
+    });
+
+    socket.on("kapalicarsi", (response) => {
+        let data;
+        try {
+            data = typeof response === "string" ? JSON.parse(response) : response;
+        } catch (e) { return; }
+
+        if (data) {
+            // Canlı ve deşifre edilmiş tam eşleşmeler
+            canlıFiyatlar.gram = parseFloat(data.GRAM?.alis || 0);
+            canlıFiyatlar.bilezik22 = parseFloat(data.AYAR22?.alis || 0);
+            canlıFiyatlar.has = parseFloat(data.HAS?.alis || 0);
+            canlıFiyatlar.ceyrek_eski = parseFloat(data.CEYREK_ESKI?.alis || 0);
+
+            // Birim fiyatları ekrana bas
+            document.getElementById('price-has').innerText = formatPara(canlıFiyatlar.has);
+            document.getElementById('price-gram').innerText = formatPara(canlıFiyatlar.gram);
+            document.getElementById('price-bilezik').innerText = formatPara(canlıFiyatlar.bilezik22);
+            document.getElementById('price-ceyrek').innerText = formatPara(canlıFiyatlar.ceyrek_eski);
+            
+            // Otomatik hesapla
+            hesapla();
+        }
+    });
+
+    function hesapla() {
+        let m_has = parseFloat(document.getElementById('input-has').value || 0);
+        let m_gram = parseFloat(document.getElementById('input-gram').value || 0);
+        let m_bilezik = parseFloat(document.getElementById('input-bilezik').value || 0);
+        let m_ceyrek = parseFloat(document.getElementById('input-ceyrek').value || 0);
+
+        let t_has = m_has * canlıFiyatlar.has;
+        let t_gram = m_gram * canlıFiyatlar.gram;
+        let t_bilezik = m_bilezik * canlıFiyatlar.bilezik22;
+        let t_ceyrek = m_ceyrek * canlıFiyatlar.ceyrek_eski;
+
+        document.getElementById('total-has').innerText = formatPara(t_has);
+        document.getElementById('total-gram').innerText = formatPara(t_gram);
+        document.getElementById('total-bilezik').innerText = formatPara(t_bilezik);
+        document.getElementById('total-ceyrek').innerText = formatPara(t_ceyrek);
+
+        let genelToplam = t_has + t_gram + t_bilezik + t_ceyrek;
+        document.getElementById('toplamServet').innerText = formatPara(genelToplam);
+    }
+
+    function formatPara(deger) {
+        return "₺" + deger.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+</script>
+</body>
+</html>
