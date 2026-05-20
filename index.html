@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Altın Hesaplama Paneli - Kapalıçarşı Anlık Altın Fiyatları</title>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
@@ -52,6 +53,35 @@
         .total-price { font-size: 1.8rem; font-weight: bold; margin-top: 8px; font-family: monospace; word-break: break-all; }
         .price-alis { color: #2ecc71; }
         .price-satis { color: #f1c40f; }
+
+        /* MOBİL UYUMLU SIFIRLA BUTONU ALANI */
+        .action-container {
+            display: flex;
+            justify-content: flex-end;
+            margin: 10px 0 -5px 0;
+            padding: 0 5px;
+        }
+        .btn-reset {
+            background: transparent;
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-reset:active {
+            background: #c0392b;
+            border-color: #c0392b;
+            color: #fff;
+            transform: scale(0.95);
+        }
         
         /* RESPONSIVE TABLO ALANI */
         .table-responsive {
@@ -63,14 +93,20 @@
             border: 1px solid #2d2d2d;
         }
         
-        table { width: 100%; border-collapse: collapse; min-width: 750px; }
+        table { width: 100%; border-collapse: collapse; min-width: 780px; }
         th, td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #2d2d2d; font-size: 0.9rem; vertical-align: middle; }
         th { background-color: #2d2d2d; color: #fff; font-weight: bold; }
         
-        th:first-child, td:first-child { text-align: left; font-weight: bold; width: 20%; }
-        th:nth-child(2), td:nth-child(2) { text-align: center; width: 14%; }
+        /* Taşıma kolonu tasarımı */
+        th.drag-col, td.drag-col { text-align: center; width: 40px; padding: 12px 5px; color: #555; user-select: none; }
+        td.drag-col { font-size: 1.1rem; cursor: grab; }
+        td.drag-col:active { cursor: grabbing; color: #f1c40f; }
+        
+        th:nth-child(2), td:nth-child(2) { text-align: left; font-weight: bold; width: 20%; }
+        th:nth-child(3), td:nth-child(3) { text-align: center; width: 14%; }
         
         tr:hover { background-color: #252525; }
+        tr:hover td.drag-col { color: #888; }
         
         .input-container { display: inline-block; position: relative; }
         input[type="number"] { 
@@ -91,6 +127,9 @@
         .satis-color { color: #f1c40f; }
         .alis-color { color: #2ecc71; }
 
+        /* Sürükleme Görsel Efektleri */
+        tbody tr.sortable-ghost { opacity: 0.3; background-color: #f1c40f22; }
+
         /* MASAÜSTÜ SÜRÜMÜ */
         @media (min-width: 600px) {
             body { padding: 20px; }
@@ -99,8 +138,14 @@
             .total-container { flex-direction: row; gap: 20px; }
             .total-price { font-size: 2.2rem; }
             th, td { padding: 14px 15px; font-size: 1rem; }
+            th.drag-col, td.drag-col { padding: 14px 5px; }
             .money { font-size: 1.05rem; }
             input[type="number"] { width: 100px; padding: 8px; font-size: 1rem; }
+            .btn-reset:hover {
+                background: #c0392b;
+                border-color: #c0392b;
+                color: #fff;
+            }
         }
     </style>
 </head>
@@ -121,10 +166,17 @@
         </div>
     </div>
 
+    <div class="action-container">
+        <button class="btn-reset" onclick="portfoyuSifirla()">
+            <span>↻</span> Paneli Sıfırla
+        </button>
+    </div>
+
     <div class="table-responsive">
         <table>
             <thead>
                 <tr>
+                    <th class="drag-col"></th>
                     <th>Altın Türü</th>
                     <th style="text-align: center;">Miktar</th>
                     <th>Canlı Alış</th>
@@ -133,90 +185,101 @@
                     <th class="satis-color">Toplam Satış</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
+            <tbody id="sortable-list">
+                <tr data-id="has">
+                    <td class="drag-col">☰</td>
                     <td>Has Altın (24 Ayar)</td>
-                    <td><div class="input-container"><input type="number" id="input-has" value="0" step="0.01" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-has" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-has-alis">₺0,00</td>
                     <td class="money alis-color" id="total-has-alis">₺0,00</td>
                     <td class="money satis-color" id="price-has-satis">₺0,00</td>
                     <td class="money satis-color" id="total-has-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="gram">
+                    <td class="drag-col">☰</td>
                     <td>Gram Altın</td>
-                    <td><div class="input-container"><input type="number" id="input-gram" value="0" step="0.01" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-gram" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-gram-alis">₺0,00</td>
                     <td class="money alis-color" id="total-gram-alis">₺0,00</td>
                     <td class="money satis-color" id="price-gram-satis">₺0,00</td>
                     <td class="money satis-color" id="total-gram-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="bilezik">
+                    <td class="drag-col">☰</td>
                     <td>22 Ayar Bilezik</td>
-                    <td><div class="input-container"><input type="number" id="input-bilezik" value="0" step="0.01" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-bilezik" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-bilezik-alis">₺0,00</td>
                     <td class="money alis-color" id="total-bilezik-alis">₺0,00</td>
                     <td class="money satis-color" id="price-bilezik-satis">₺0,00</td>
                     <td class="money satis-color" id="total-bilezik-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="ceyrek-eski">
+                    <td class="drag-col">☰</td>
                     <td>Çeyrek Eski</td>
-                    <td><div class="input-container"><input type="number" id="input-ceyrek-eski" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-ceyrek-eski" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-ceyrek-eski-alis">₺0,00</td>
                     <td class="money alis-color" id="total-ceyrek-eski-alis">₺0,00</td>
                     <td class="money satis-color" id="price-ceyrek-eski-satis">₺0,00</td>
                     <td class="money satis-color" id="total-ceyrek-eski-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="ceyrek-yeni">
+                    <td class="drag-col">☰</td>
                     <td>Çeyrek Yeni</td>
-                    <td><div class="input-container"><input type="number" id="input-ceyrek-yeni" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-ceyrek-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-ceyrek-yeni-alis">₺0,00</td>
                     <td class="money alis-color" id="total-ceyrek-yeni-alis">₺0,00</td>
                     <td class="money satis-color" id="price-ceyrek-yeni-satis">₺0,00</td>
                     <td class="money satis-color" id="total-ceyrek-yeni-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="yarim-eski">
+                    <td class="drag-col">☰</td>
                     <td>Yarım Eski</td>
-                    <td><div class="input-container"><input type="number" id="input-yarim-eski" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-yarim-eski" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-yarim-eski-alis">₺0,00</td>
                     <td class="money alis-color" id="total-yarim-eski-alis">₺0,00</td>
                     <td class="money satis-color" id="price-yarim-eski-satis">₺0,00</td>
                     <td class="money satis-color" id="total-yarim-eski-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="yarim-yeni">
+                    <td class="drag-col">☰</td>
                     <td>Yarım Yeni</td>
-                    <td><div class="input-container"><input type="number" id="input-yarim-yeni" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-yarim-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-yarim-yeni-alis">₺0,00</td>
                     <td class="money alis-color" id="total-yarim-yeni-alis">₺0,00</td>
                     <td class="money satis-color" id="price-yarim-yeni-satis">₺0,00</td>
                     <td class="money satis-color" id="total-yarim-yeni-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="tam-eski">
+                    <td class="drag-col">☰</td>
                     <td>Eski Tam</td>
-                    <td><div class="input-container"><input type="number" id="input-tam-eski" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-tam-eski" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-tam-eski-alis">₺0,00</td>
                     <td class="money alis-color" id="total-tam-eski-alis">₺0,00</td>
                     <td class="money satis-color" id="price-tam-eski-satis">₺0,00</td>
                     <td class="money satis-color" id="total-tam-eski-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="tam-yeni">
+                    <td class="drag-col">☰</td>
                     <td>Tam Altın (Yeni)</td>
-                    <td><div class="input-container"><input type="number" id="input-tam-yeni" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-tam-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-tam-yeni-alis">₺0,00</td>
                     <td class="money alis-color" id="total-tam-yeni-alis">₺0,00</td>
                     <td class="money satis-color" id="price-tam-yeni-satis">₺0,00</td>
                     <td class="money satis-color" id="total-tam-yeni-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="ata">
+                    <td class="drag-col">☰</td>
                     <td>Ata Altın</td>
-                    <td><div class="input-container"><input type="number" id="input-ata" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-ata" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-ata-alis">₺0,00</td>
                     <td class="money alis-color" id="total-ata-alis">₺0,00</td>
                     <td class="money satis-color" id="price-ata-satis">₺0,00</td>
                     <td class="money satis-color" id="total-ata-satis">₺0,00</td>
                 </tr>
-                <tr>
+                <tr data-id="ayar14">
+                    <td class="drag-col">☰</td>
                     <td>14 Ayar Altın</td>
-                    <td><div class="input-container"><input type="number" id="input-ayar14" value="0" step="0.01" oninput="hesapla()"></div></td>
+                    <td><div class="input-container"><input type="number" id="input-ayar14" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color" id="price-ayar14-alis">₺0,00</td>
                     <td class="money alis-color" id="total-ayar14-alis">₺0,00</td>
                     <td class="money satis-color" id="price-ayar14-satis">₺0,00</td>
@@ -304,6 +367,18 @@
         document.getElementById(`price-${id}-satis`).innerText = formatPara(satis);
     }
 
+    // LocalStorage için Değerleri Kaydedip Hesaplayan Yeni Ara Fonksiyon
+    function kaydetVeHesapla() {
+        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        urunler.forEach(u => {
+            let el = document.getElementById(`input-${u}`);
+            if(el) {
+                localStorage.setItem(`input-${u}`, el.value);
+            }
+        });
+        hesapla();
+    }
+
     function hesapla() {
         let m = {
             has: parseFloat(document.getElementById('input-has').value || 0),
@@ -329,8 +404,10 @@
             let t_alis = m[anahtar] * canlıFiyatlar[`${anahtar}_alis`];
             let t_satis = m[anahtar] * canlıFiyatlar[`${anahtar}_satis`];
             
-            document.getElementById(`total-${u}-alis`).innerText = formatPara(t_alis);
-            document.getElementById(`total-${u}-satis`).innerText = formatPara(t_satis);
+            let elAlis = document.getElementById(`total-${u}-alis`);
+            let elSatis = document.getElementById(`total-${u}-satis`);
+            if(elAlis) elAlis.innerText = formatPara(t_alis);
+            if(elSatis) elSatis.innerText = formatPara(t_satis);
             
             genelAlis += t_alis;
             genelSatis += t_satis;
@@ -343,6 +420,66 @@
     function formatPara(deger) {
         return "₺" + deger.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
+
+    // Onay Mekanizmalı Sıfırlama Fonksiyonu
+    function portfoyuSifirla() {
+        if (confirm("Girdiğiniz tüm miktarlar sıfırlanacak ve tablo düzeni orijinal haline getirilecektir. Emin misiniz?")) {
+            let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+            
+            // 1. LocalStorage'ı temizle
+            urunler.forEach(u => localStorage.removeItem(`input-${u}`));
+            localStorage.removeItem('altinTabloSiralamasi');
+            
+            // 2. Input değerlerini sıfırla
+            urunler.forEach(u => {
+                let el = document.getElementById(`input-${u}`);
+                if (el) el.value = 0;
+            });
+            
+            // 3. Tabloyu yenile (Sıralamayı varsayılana döndürmek için sayfayı yeniden yüklemek en temiz yoldur)
+            window.location.reload();
+        }
+    }
+
+    // SortableJS ve LocalStorage Veri Yükleme İşlemleri
+    document.addEventListener("DOMContentLoaded", function() {
+        const tbody = document.getElementById('sortable-list');
+        
+        // 1. Kayıtlı Değerleri Geri Yükle
+        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        urunler.forEach(u => {
+            let kayitliDeger = localStorage.getItem(`input-${u}`);
+            let el = document.getElementById(`input-${u}`);
+            if (kayitliDeger !== null && el) {
+                el.value = kayitliDeger;
+            }
+        });
+
+        // 2. Kayıtlı Sıralamayı Geri Yükle
+        const savedOrder = localStorage.getItem('altinTabloSiralamasi');
+        if (savedOrder) {
+            const orderArray = JSON.parse(savedOrder);
+            orderArray.forEach(id => {
+                const row = tbody.querySelector(`tr[data-id="${id}"]`);
+                if (row) tbody.appendChild(row);
+            });
+        }
+
+        // 3. Sıralama Kütüphanesini Başlat (Sadece sol taşıma kolonundan tutulup taşınabilir yapıldı)
+        new Sortable(tbody, {
+            animation: 150,
+            handle: '.drag-col',
+            ghostClass: 'sortable-ghost',
+            onEnd: function() {
+                // Sıralama bittiğinde yeni düzeni kaydet
+                const yeniSiralama = Array.from(tbody.children).map(row => row.dataset.id);
+                localStorage.setItem('altinTabloSiralamasi', JSON.stringify(yeniSiralama));
+            }
+        });
+
+        // Değerler yüklendikten sonra ilk hesaplamayı tetikle
+        hesapla();
+    });
 </script>
 </body>
 </html>
