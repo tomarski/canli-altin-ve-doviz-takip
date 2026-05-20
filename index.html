@@ -2,83 +2,246 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Canlı Kapalıçarşı Altın Portföy Paneli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratuvar: Full Canlı Altın Portföy Paneli (Yeni Sıralama)</title>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #121212; color: #fff; padding: 20px; text-align: center; margin: 0; }
-        .container { max-width: 750px; margin: 30px auto; padding: 25px; background: #1e1e1e; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); border: 1px solid #2d2d2d; }
-        h1 { color: #f1c40f; margin-bottom: 5px; font-size: 1.8rem; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: #121212; 
+            color: #fff; 
+            padding: 10px; 
+            text-align: center; 
+            margin: 0; 
+        }
+        .container { 
+            max-width: 950px; 
+            margin: 10px auto; 
+            padding: 15px; 
+            background: #1e1e1e; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #2d2d2d; 
+            box-sizing: border-box;
+        }
+        h1 { color: #f1c40f; margin-bottom: 5px; font-size: 1.5rem; }
         .live-indicator { display: inline-block; width: 10px; height: 10px; background: #2ecc71; border-radius: 50%; margin-right: 5px; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
         
-        .total-box { background: linear-gradient(135deg, #1a252f, #2c3e50); padding: 25px; border-radius: 12px; margin: 20px 0; border: 2px solid #f1c40f; }
-        .total-title { font-size: 0.9rem; letter-spacing: 1px; color: #f1c40f; font-weight: bold; }
-        .total-price { font-size: 3rem; font-weight: bold; color: #2ecc71; margin-top: 10px; font-family: monospace; }
+        /* RESPONSIVE TOPLAM KUTULARI */
+        .total-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            margin: 20px 0; 
+        }
+        .total-box { 
+            flex: 1; 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 2px solid #2d2d2d; 
+            box-sizing: border-box;
+        }
+        .box-alis { background: linear-gradient(135deg, #111e16, #162e20); border-color: #2ecc71; }
+        .box-satis { background: linear-gradient(135deg, #1f1b10, #342709); border-color: #f1c40f; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 14px 15px; text-align: left; border-bottom: 1px solid #2d2d2d; }
-        th { background-color: #f1c40f; color: #000; font-weight: bold; font-size: 0.9rem; }
+        .total-title { font-size: 0.8rem; letter-spacing: 1px; font-weight: bold; }
+        .title-alis { color: #2ecc71; }
+        .title-satis { color: #f1c40f; }
+        
+        .total-price { font-size: 1.8rem; font-weight: bold; margin-top: 8px; font-family: monospace; word-break: break-all; }
+        .price-alis { color: #2ecc71; }
+        .price-satis { color: #f1c40f; }
+        
+        /* RESPONSIVE TABLO ALANI */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #2d2d2d;
+        }
+        
+        table { width: 100%; border-collapse: collapse; min-width: 750px; }
+        th, td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #2d2d2d; font-size: 0.9rem; vertical-align: middle; }
+        th { background-color: #2d2d2d; color: #fff; font-weight: bold; }
+        
+        th:first-child, td:first-child { text-align: left; font-weight: bold; width: 20%; }
+        th:nth-child(2), td:nth-child(2) { text-align: center; width: 14%; }
+        
         tr:hover { background-color: #252525; }
         
-        input[type="number"] { width: 95px; padding: 8px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: bold; }
+        .input-container { display: inline-block; position: relative; }
+        input[type="number"] { 
+            width: 85px; 
+            padding: 8px 5px; 
+            background: #2a2a2a; 
+            border: 1px solid #444; 
+            color: #fff; 
+            border-radius: 6px; 
+            text-align: center; 
+            font-size: 0.95rem; 
+            font-weight: bold;
+            box-sizing: border-box;
+        }
         input[type="number"]:focus { border-color: #f1c40f; outline: none; background: #333; }
-        .money { font-weight: bold; font-family: monospace; font-size: 1.1rem; text-align: right; }
-        .text-right { text-align: right; }
+        
+        .money { font-weight: bold; font-family: monospace; font-size: 0.95rem; }
+        .satis-color { color: #f1c40f; }
+        .alis-color { color: #2ecc71; }
+
+        /* MASAÜSTÜ SÜRÜMÜ */
+        @media (min-width: 600px) {
+            body { padding: 20px; }
+            .container { padding: 25px; margin: 30px auto; }
+            h1 { font-size: 1.8rem; }
+            .total-container { flex-direction: row; gap: 20px; }
+            .total-price { font-size: 2.2rem; }
+            th, td { padding: 14px 15px; font-size: 1rem; }
+            .money { font-size: 1.05rem; }
+            input[type="number"] { width: 100px; padding: 8px; font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1><span class="live-indicator"></span> Kapalıçarşı Canlı Portföy Paneli</h1>
-    <p style="color: #aaa; margin: 0; font-size: 0.85rem;">Güncel portföy miktarları başlangıç değeri olarak kod içerisine sabitlenmiştir.</p>
+    <h1><span class="live-indicator"></span> Profesyonel Altın Portföy Paneli</h1>
+    <p style="color: #aaa; margin: 0; font-size: 0.8rem;">Yeni özel sıralama düzeniyle çift yönlü canlı hesaplama.</p>
 
-    <div class="total-box">
-        <div class="total-title">ANLIK TOPLAM SERVET (BOZDURMA / ALIŞ)</div>
-        <div class="total-price" id="toplamServet">₺0,00</div>
+    <div class="total-container">
+        <div class="total-box box-alis">
+            <div class="total-title title-alis">TOPLAM BOZDURMA DEĞERİ (ALIŞ)</div>
+            <div class="total-price price-alis" id="toplamServetAlis">₺0,00</div>
+        </div>
+        <div class="total-box box-satis">
+            <div class="total-title title-satis">GÜNCEL YENİDEN ALIM DEĞERİ (SATIŞ)</div>
+            <div class="total-price price-satis" id="toplamServetSatis">₺0,00</div>
+        </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Altın Türü</th>
-                <th>Elindeki Miktar</th>
-                <th class="text-right">Canlı Alış (Birim)</th>
-                <th class="text-right">Toplam Değer</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Has Altın (24 Ayar)</td>
-                <td><input type="number" id="input-has" value="158.78" step="0.01" oninput="hesapla()"> gr</td>
-                <td class="money" id="price-has">₺0,00</td>
-                <td class="money" id="total-has">₺0,00</td>
-            </tr>
-            <tr>
-                <td>Gram Altın</td>
-                <td><input type="number" id="input-gram" value="227" step="0.01" oninput="hesapla()"> gr</td>
-                <td class="money" id="price-gram">₺0,00</td>
-                <td class="money" id="total-gram">₺0,00</td>
-            </tr>
-            <tr>
-                <td>22 Ayar Bilezik</td>
-                <td><input type="number" id="input-bilezik" value="106.16" step="0.01" oninput="hesapla()"> gr</td>
-                <td class="money" id="price-bilezik">₺0,00</td>
-                <td class="money" id="total-bilezik">₺0,00</td>
-            </tr>
-            <tr>
-                <td>Çeyrek Eski</td>
-                <td><input type="number" id="input-ceyrek" value="13" step="1" oninput="hesapla()"> adet</td>
-                <td class="money" id="price-ceyrek">₺0,00</td>
-                <td class="money" id="total-ceyrek">₺0,00</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Altın Türü</th>
+                    <th style="text-align: center;">Miktar</th>
+                    <th>Canlı Alış</th>
+                    <th>Toplam Alış</th>
+                    <th class="satis-color">Canlı Satış</th>
+                    <th class="satis-color">Toplam Satış</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Has Altın (24 Ayar)</td>
+                    <td><div class="input-container"><input type="number" id="input-has" value="158.78" step="0.01" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-has-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-has-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-has-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-has-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Gram Altın</td>
+                    <td><div class="input-container"><input type="number" id="input-gram" value="227" step="0.01" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-gram-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-gram-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-gram-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-gram-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>22 Ayar Bilezik</td>
+                    <td><div class="input-container"><input type="number" id="input-bilezik" value="106.16" step="0.01" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-bilezik-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-bilezik-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-bilezik-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-bilezik-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Çeyrek Eski</td>
+                    <td><div class="input-container"><input type="number" id="input-ceyrek-eski" value="13" step="1" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-ceyrek-eski-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-ceyrek-eski-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-ceyrek-eski-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-ceyrek-eski-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Çeyrek Yeni</td>
+                    <td><div class="input-container"><input type="number" id="input-ceyrek-yeni" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-ceyrek-yeni-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-ceyrek-yeni-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-ceyrek-yeni-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-ceyrek-yeni-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Yarım Eski</td>
+                    <td><div class="input-container"><input type="number" id="input-yarim-eski" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-yarim-eski-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-yarim-eski-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-yarim-eski-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-yarim-eski-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Yarım Yeni</td>
+                    <td><div class="input-container"><input type="number" id="input-yarim-yeni" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-yarim-yeni-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-yarim-yeni-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-yarim-yeni-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-yarim-yeni-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Eski Tam</td>
+                    <td><div class="input-container"><input type="number" id="input-tam-eski" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-tam-eski-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-tam-eski-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-tam-eski-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-tam-eski-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Tam Altın (Yeni)</td>
+                    <td><div class="input-container"><input type="number" id="input-tam-yeni" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-tam-yeni-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-tam-yeni-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-tam-yeni-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-tam-yeni-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>Ata Altın</td>
+                    <td><div class="input-container"><input type="number" id="input-ata" value="0" step="1" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-ata-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-ata-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-ata-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-ata-satis">₺0,00</td>
+                </tr>
+                <tr>
+                    <td>14 Ayar Altın</td>
+                    <td><div class="input-container"><input type="number" id="input-ayar14" value="0" step="0.01" oninput="hesapla()"></div></td>
+                    <td class="money alis-color" id="price-ayar14-alis">₺0,00</td>
+                    <td class="money alis-color" id="total-ayar14-alis">₺0,00</td>
+                    <td class="money satis-color" id="price-ayar14-satis">₺0,00</td>
+                    <td class="money satis-color" id="total-ayar14-satis">₺0,00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    let canlıFiyatlar = { has: 0, gram: 0, bilezik22: 0, ceyrek_eski: 0 };
+    let canlıFiyatlar = {
+        has_alis: 0, has_satis: 0,
+        gram_alis: 0, gram_satis: 0,
+        bilezik_alis: 0, bilezik_satis: 0,
+        ceyrek_eski_alis: 0, ceyrek_eski_satis: 0,
+        ceyrek_yeni_alis: 0, ceyrek_yeni_satis: 0,
+        yarim_eski_alis: 0, yarim_eski_satis: 0,
+        yarim_yeni_alis: 0, yarim_yeni_satis: 0,
+        tam_eski_alis: 0, tam_eski_satis: 0,
+        tam_yeni_alis: 0, tam_yeni_satis: 0,
+        ata_alis: 0, ata_satis: 0,
+        ayar14_alis: 0, ayar14_satis: 0
+    };
 
-    // Sitenin canlı soket sunucusu
     const socket = io("https://socket.anlikaltinfiyatlari.com", {
         path: "/sio/p7013/socket.io",
         transports: ["websocket"]
@@ -91,41 +254,86 @@
         } catch (e) { return; }
 
         if (data) {
-            // Canlı ve deşifre edilmiş tam eşleşmeler
-            canlıFiyatlar.gram = parseFloat(data.GRAM?.alis || 0);
-            canlıFiyatlar.bilezik22 = parseFloat(data.AYAR22?.alis || 0);
-            canlıFiyatlar.has = parseFloat(data.HAS?.alis || 0);
-            canlıFiyatlar.ceyrek_eski = parseFloat(data.CEYREK_ESKI?.alis || 0);
+            // Canlı fiyatları eşleme
+            canlıFiyatlar.has_alis = parseFloat(data.HAS?.alis || 0);
+            canlıFiyatlar.has_satis = parseFloat(data.HAS?.satis || 0);
+            canlıFiyatlar.gram_alis = parseFloat(data.GRAM?.alis || 0);
+            canlıFiyatlar.gram_satis = parseFloat(data.GRAM?.satis || 0);
+            canlıFiyatlar.bilezik_alis = parseFloat(data.AYAR22?.alis || 0);
+            canlıFiyatlar.bilezik_satis = parseFloat(data.AYAR22?.satis || 0);
+            canlıFiyatlar.ceyrek_eski_alis = parseFloat(data.CEYREK_ESKI?.alis || 0);
+            canlıFiyatlar.ceyrek_eski_satis = parseFloat(data.CEYREK_ESKI?.satis || 0);
+            canlıFiyatlar.ceyrek_yeni_alis = parseFloat(data.CEYREK?.alis || 0);
+            canlıFiyatlar.ceyrek_yeni_satis = parseFloat(data.CEYREK?.satis || 0);
+            canlıFiyatlar.yarim_eski_alis = parseFloat(data.YARIM_ESKI?.alis || 0);
+            canlıFiyatlar.yarim_eski_satis = parseFloat(data.YARIM_ESKI?.satis || 0);
+            canlıFiyatlar.yarim_yeni_alis = parseFloat(data.YARIM?.alis || 0);
+            canlıFiyatlar.yarim_yeni_satis = parseFloat(data.YARIM?.satis || 0);
+            canlıFiyatlar.tam_eski_alis = parseFloat(data.TEK_ESKI?.alis || 0);
+            canlıFiyatlar.tam_eski_satis = parseFloat(data.TEK_ESKI?.satis || 0);
+            canlıFiyatlar.tam_yeni_alis = parseFloat(data.TEK?.alis || 0);
+            canlıFiyatlar.tam_yeni_satis = parseFloat(data.TEK?.satis || 0);
+            canlıFiyatlar.ata_alis = parseFloat(data.ATA?.alis || 0);
+            canlıFiyatlar.ata_satis = parseFloat(data.ATA?.satis || 0);
+            canlıFiyatlar.ayar14_alis = parseFloat(data.AYAR14?.alis || 0);
+            canlıFiyatlar.ayar14_satis = parseFloat(data.AYAR14?.satis || 0);
 
-            // Birim fiyatları ekrana bas
-            document.getElementById('price-has').innerText = formatPara(canlıFiyatlar.has);
-            document.getElementById('price-gram').innerText = formatPara(canlıFiyatlar.gram);
-            document.getElementById('price-bilezik').innerText = formatPara(canlıFiyatlar.bilezik22);
-            document.getElementById('price-ceyrek').innerText = formatPara(canlıFiyatlar.ceyrek_eski);
+            // Fiyatları ekrana basma
+            basFiyat('has', canlıFiyatlar.has_alis, canlıFiyatlar.has_satis);
+            basFiyat('gram', canlıFiyatlar.gram_alis, canlıFiyatlar.gram_satis);
+            basFiyat('bilezik', canlıFiyatlar.bilezik_alis, canlıFiyatlar.bilezik_satis);
+            basFiyat('ceyrek-eski', canlıFiyatlar.ceyrek_eski_alis, canlıFiyatlar.ceyrek_eski_satis);
+            basFiyat('ceyrek-yeni', canlıFiyatlar.ceyrek_yeni_alis, canlıFiyatlar.ceyrek_yeni_satis);
+            basFiyat('yarim-eski', canlıFiyatlar.yarim_eski_alis, canlıFiyatlar.yarim_eski_satis);
+            basFiyat('yarim-yeni', canlıFiyatlar.yarim_yeni_alis, canlıFiyatlar.yarim_yeni_satis);
+            basFiyat('tam-eski', canlıFiyatlar.tam_eski_alis, canlıFiyatlar.tam_eski_satis);
+            basFiyat('tam-yeni', canlıFiyatlar.tam_yeni_alis, canlıFiyatlar.tam_yeni_satis);
+            basFiyat('ata', canlıFiyatlar.ata_alis, canlıFiyatlar.ata_satis);
+            basFiyat('ayar14', canlıFiyatlar.ayar14_alis, canlıFiyatlar.ayar14_satis);
             
-            // Otomatik hesapla
             hesapla();
         }
     });
 
+    function basFiyat(id, alis, satis) {
+        document.getElementById(`price-${id}-alis`).innerText = formatPara(alis);
+        document.getElementById(`price-${id}-satis`).innerText = formatPara(satis);
+    }
+
     function hesapla() {
-        let m_has = parseFloat(document.getElementById('input-has').value || 0);
-        let m_gram = parseFloat(document.getElementById('input-gram').value || 0);
-        let m_bilezik = parseFloat(document.getElementById('input-bilezik').value || 0);
-        let m_ceyrek = parseFloat(document.getElementById('input-ceyrek').value || 0);
+        let m = {
+            has: parseFloat(document.getElementById('input-has').value || 0),
+            gram: parseFloat(document.getElementById('input-gram').value || 0),
+            bilezik: parseFloat(document.getElementById('input-bilezik').value || 0),
+            ceyrek_eski: parseFloat(document.getElementById('input-ceyrek-eski').value || 0),
+            ceyrek_yeni: parseFloat(document.getElementById('input-ceyrek-yeni').value || 0),
+            yarim_eski: parseFloat(document.getElementById('input-yarim-eski').value || 0),
+            yarim_yeni: parseFloat(document.getElementById('input-yarim-yeni').value || 0),
+            tam_eski: parseFloat(document.getElementById('input-tam-eski').value || 0),
+            tam_yeni: parseFloat(document.getElementById('input-tam-yeni').value || 0),
+            ata: parseFloat(document.getElementById('input-ata').value || 0),
+            ayar14: parseFloat(document.getElementById('input-ayar14').value || 0)
+        };
 
-        let t_has = m_has * canlıFiyatlar.has;
-        let t_gram = m_gram * canlıFiyatlar.gram;
-        let t_bilezik = m_bilezik * canlıFiyatlar.bilezik22;
-        let t_ceyrek = m_ceyrek * canlıFiyatlar.ceyrek_eski;
+        let genelAlis = 0;
+        let genelSatis = 0;
 
-        document.getElementById('total-has').innerText = formatPara(t_has);
-        document.getElementById('total-gram').innerText = formatPara(t_gram);
-        document.getElementById('total-bilezik').innerText = formatPara(t_bilezik);
-        document.getElementById('total-ceyrek').innerText = formatPara(t_ceyrek);
+        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        
+        urunler.forEach(u => {
+            let anahtar = u.replace('-', '_');
+            let t_alis = m[anahtar] * canlıFiyatlar[`${anahtar}_alis`];
+            let t_satis = m[anahtar] * canlıFiyatlar[`${anahtar}_satis`];
+            
+            document.getElementById(`total-${u}-alis`).innerText = formatPara(t_alis);
+            document.getElementById(`total-${u}-satis`).innerText = formatPara(t_satis);
+            
+            genelAlis += t_alis;
+            genelSatis += t_satis;
+        });
 
-        let genelToplam = t_has + t_gram + t_bilezik + t_ceyrek;
-        document.getElementById('toplamServet').innerText = formatPara(genelToplam);
+        document.getElementById('toplamServetAlis').innerText = formatPara(genelAlis);
+        document.getElementById('toplamServetSatis').innerText = formatPara(genelSatis);
     }
 
     function formatPara(deger) {
