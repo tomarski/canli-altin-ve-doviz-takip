@@ -7,26 +7,63 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
+        /* VARSAYILAN DEĞİŞKENLER (KARANLIK MOD) */
+        :root {
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --text-main: #ffffff;
+            --text-sub: #aaaaaa;
+            --border-color: #2d2d2d;
+            --th-bg: #2d2d2d;
+            --tr-hover: #252525;
+            --input-bg: #2a2a2a;
+            --input-border: #444444;
+            --flash-up-start: rgba(46, 204, 113, 0.6);
+            --flash-up-end: rgba(46, 204, 113, 0.15);
+            --flash-down-start: rgba(231, 76, 60, 0.6);
+            --flash-down-end: rgba(231, 76, 60, 0.15);
+        }
+
+        /* AYDINLIK MOD DEĞİŞKENLERİ */
+        [data-theme="light"] {
+            --bg-body: #f4f6f9;
+            --bg-container: #ffffff;
+            --text-main: #2c3e50;
+            --text-sub: #7f8c8d;
+            --border-color: #e2e8f0;
+            --th-bg: #edf2f7;
+            --tr-hover: #f8fafc;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --flash-up-start: rgba(46, 204, 113, 0.7);
+            --flash-up-end: rgba(46, 204, 113, 0.2);
+            --flash-down-start: rgba(231, 76, 60, 0.7);
+            --flash-down-end: rgba(231, 76, 60, 0.2);
+        }
+
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
-            background: #121212; 
-            color: #fff; 
+            background: var(--bg-body); 
+            color: var(--text-main); 
             padding: 10px; 
             text-align: center; 
-            margin: 0; 
+            margin: 0;
+            transition: background 0.3s ease, color 0.3s ease;
         }
         .container { 
             max-width: 950px; 
             margin: 10px auto; 
             padding: 15px; 
-            background: #1e1e1e; 
+            background: var(--bg-container); 
             border-radius: 16px; 
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5); 
-            border: 1px solid #2d2d2d; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15); 
+            border: 1px solid var(--border-color); 
             box-sizing: border-box;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         h1 { color: #f1c40f; margin-bottom: 5px; font-size: 1.5rem; }
         .live-indicator { display: inline-block; width: 10px; height: 10px; background: #2ecc71; border-radius: 50%; margin-right: 5px; animation: blink 1s infinite; }
+        .live-time { font-size: 0.75rem; color: var(--text-sub); font-family: monospace; margin-left: 5px; vertical-align: middle; }
         @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
         
         /* RESPONSIVE TOPLAM KUTULARI */
@@ -40,11 +77,11 @@
             flex: 1; 
             padding: 15px; 
             border-radius: 12px; 
-            border: 2px solid #2d2d2d; 
+            border: 2px solid var(--border-color); 
             box-sizing: border-box;
         }
-        .box-alis { background: linear-gradient(135deg, #111e16, #162e20); border-color: #2ecc71; }
-        .box-satis { background: linear-gradient(135deg, #1f1b10, #342709); border-color: #f1c40f; }
+        .box-alis { background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(46,204,113,0.2)); border-color: #2ecc71; }
+        .box-satis { background: linear-gradient(135deg, rgba(241,196,15,0.1), rgba(241,196,15,0.2)); border-color: #f1c40f; }
         
         .total-title { font-size: 0.8rem; letter-spacing: 1px; font-weight: bold; }
         .title-alis { color: #2ecc71; }
@@ -54,17 +91,76 @@
         .price-alis { color: #2ecc71; }
         .price-satis { color: #f1c40f; }
 
-        /* MOBİL UYUMLU SIFIRLA BUTONU ALANI */
+        /* MOBİL UYUMLU AKSİYON ALANI (SWITCHLER & SIFIRLA) */
         .action-container {
             display: flex;
-            justify-content: flex-end;
-            margin: 10px 0 -5px 0;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0 -5px 0;
             padding: 0 5px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
+        .switches-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* Toggle Switch Tasarımı */
+        .switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .switch-label {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--input-border);
+            transition: .3s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 12px;
+            width: 12px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--bg-container);
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2ecc71;
+        }
+        input:checked + .slider:before {
+            transform: translateX(14px);
+        }
+
         .btn-reset {
             background: transparent;
-            border: 1px solid #444;
-            color: #aaa;
+            border: 1px solid var(--input-border);
+            color: var(--text-sub);
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.75rem;
@@ -90,45 +186,70 @@
             -webkit-overflow-scrolling: touch;
             margin-top: 20px;
             border-radius: 8px;
-            border: 1px solid #2d2d2d;
+            border: 1px solid var(--border-color);
         }
         
         table { width: 100%; border-collapse: collapse; min-width: 780px; }
-        th, td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #2d2d2d; font-size: 0.9rem; vertical-align: middle; }
-        th { background-color: #2d2d2d; color: #fff; font-weight: bold; }
+        th, td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; transition: background-color 0.4s ease, color 0.3s ease; }
+        th { background-color: var(--th-bg); color: var(--text-main); font-weight: bold; }
         
         /* Taşıma kolonu tasarımı */
-        th.drag-col, td.drag-col { text-align: center; width: 40px; padding: 12px 5px; color: #555; user-select: none; }
+        th.drag-col, td.drag-col { text-align: center; width: 40px; padding: 10px 5px; color: var(--text-sub); opacity: 0.4; user-select: none; }
         td.drag-col { font-size: 1.1rem; cursor: grab; }
-        td.drag-col:active { cursor: grabbing; color: #f1c40f; }
+        td.drag-col:active { cursor: grabbing; color: #f1c40f; opacity: 1; }
         
-        th:nth-child(2), td:nth-child(2) { text-align: left; font-weight: bold; width: 20%; }
+        th:nth-child(2), td:nth-child(2) { text-align: left; font-weight: bold; width: 20%; color: var(--text-main); }
         th:nth-child(3), td:nth-child(3) { text-align: center; width: 14%; }
         
-        tr:hover { background-color: #252525; }
-        tr:hover td.drag-col { color: #888; }
+        tr { transition: opacity 0.3s ease; background-color: var(--bg-container); }
+        tr:hover { background-color: var(--tr-hover); }
         
         .input-container { display: inline-block; position: relative; }
         input[type="number"] { 
             width: 85px; 
             padding: 8px 5px; 
-            background: #2a2a2a; 
-            border: 1px solid #444; 
-            color: #fff; 
+            background: var(--input-bg); 
+            border: 1px solid var(--input-border); 
+            color: var(--text-main); 
             border-radius: 6px; 
             text-align: center; 
             font-size: 0.95rem; 
             font-weight: bold;
             box-sizing: border-box;
+            transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
-        input[type="number"]:focus { border-color: #f1c40f; outline: none; background: #333; }
+        input[type="number"]:focus { border-color: #f1c40f; outline: none; }
         
         .money { font-weight: bold; font-family: monospace; font-size: 0.95rem; }
         .satis-color { color: #f1c40f; }
         .alis-color { color: #2ecc71; }
 
+        /* Değişim Miktarı CSS Alanı */
+        .change-amount {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: bold;
+            margin-top: 2px;
+            font-family: monospace;
+        }
+        .change-up { color: #2ecc71; }
+        .change-down { color: #e74c3c; }
+
+        /* Durumsal Flaşör Animasyonları (Koyudan açığa iner ve açık kalır) */
+        .state-up { animation: flashGreenToLight 0.8s ease-out forwards; }
+        .state-down { animation: flashRedToLight 0.8s ease-out forwards; }
+
+        @keyframes flashGreenToLight {
+            0% { background-color: var(--flash-up-start); }
+            100% { background-color: var(--flash-up-end); }
+        }
+        @keyframes flashRedToLight {
+            0% { background-color: var(--flash-down-start); }
+            100% { background-color: var(--flash-down-end); }
+        }
+
         /* Sürükleme Görsel Efektleri */
-        tbody tr.sortable-ghost { opacity: 0.3; background-color: #f1c40f22; }
+        tbody tr.sortable-ghost { opacity: 0.3; background-color: rgba(241, 196, 15, 0.15); }
 
         /* MASAÜSTÜ SÜRÜMÜ */
         @media (min-width: 600px) {
@@ -152,13 +273,16 @@
 <body>
 
 <div class="container">
-    <h1><span class="live-indicator"></span> Profesyonel Altın Portföy Paneli</h1>
-    <p style="color: #aaa; margin: 0; font-size: 0.8rem;">Kapalıçarşı Anlık Altın Fiyatları</p>
+    <h1>
+        <span class="live-indicator"></span>Profesyonel Altın Portföy Paneli
+        <span class="live-time" id="sonGuncellemeSaat">--:--:--</span>
+    </h1>
+    <p style="color: var(--text-sub); margin: 0; font-size: 0.8rem;">Kapalıçarşı Anlık Altın Fiyatları</p>
 
     <div class="total-container">
         <div class="total-box box-alis">
             <div class="total-title title-alis">TOPLAM BOZDURMA DEĞERİ (ALIŞ)</div>
-            <div class="total-price price-alis" id="toplamServetAlis">₺0,00</div>
+            <div class="total-price price-alis" id="tophamServetAlis">₺0,00</div>
         </div>
         <div class="total-box box-satis">
             <div class="total-title title-satis">GÜNCEL YENİDEN ALIM DEĞERİ (SATIŞ)</div>
@@ -167,6 +291,24 @@
     </div>
 
     <div class="action-container">
+        <div class="switches-group">
+            <label class="switch-wrapper" for="toggle-zero">
+                <div class="switch">
+                    <input type="checkbox" id="toggle-zero" onchange="filtreleSifirlari()">
+                    <span class="slider"></span>
+                </div>
+                <span class="switch-label">Miktarı 0 Olanları Gizle</span>
+            </label>
+
+            <label class="switch-wrapper" for="toggle-theme">
+                <div class="switch">
+                    <input type="checkbox" id="toggle-theme" onchange="temaDegistir()">
+                    <span class="slider"></span>
+                </div>
+                <span class="switch-label" id="theme-label">Aydınlık Mod</span>
+            </label>
+        </div>
+        
         <button class="btn-reset" onclick="portfoyuSifirla()">
             <span>↻</span> Paneli Sıfırla
         </button>
@@ -190,111 +332,113 @@
                     <td class="drag-col">☰</td>
                     <td>Has Altın (24 Ayar)</td>
                     <td><div class="input-container"><input type="number" id="input-has" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-has-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-has-alis">₺0,00</span><span id="diff-has-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-has-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-has-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-has-satis">₺0,00</span><span id="diff-has-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-has-satis">₺0,00</td>
                 </tr>
                 <tr data-id="gram">
                     <td class="drag-col">☰</td>
                     <td>Gram Altın</td>
                     <td><div class="input-container"><input type="number" id="input-gram" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-gram-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-gram-alis">₺0,00</span><span id="diff-gram-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-gram-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-gram-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-gram-satis">₺0,00</span><span id="diff-gram-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-gram-satis">₺0,00</td>
                 </tr>
                 <tr data-id="bilezik">
                     <td class="drag-col">☰</td>
                     <td>22 Ayar Bilezik</td>
                     <td><div class="input-container"><input type="number" id="input-bilezik" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-bilezik-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-bilezik-alis">₺0,00</span><span id="diff-bilezik-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-bilezik-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-bilezik-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-bilezik-satis">₺0,00</span><span id="diff-bilezik-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-bilezik-satis">₺0,00</td>
                 </tr>
                 <tr data-id="ceyrek-eski">
                     <td class="drag-col">☰</td>
                     <td>Çeyrek Eski</td>
                     <td><div class="input-container"><input type="number" id="input-ceyrek-eski" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-ceyrek-eski-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-ceyrek-eski-alis">₺0,00</span><span id="diff-ceyrek-eski-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-ceyrek-eski-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-ceyrek-eski-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-ceyrek-eski-satis">₺0,00</span><span id="diff-ceyrek-eski-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-ceyrek-eski-satis">₺0,00</td>
                 </tr>
                 <tr data-id="ceyrek-yeni">
                     <td class="drag-col">☰</td>
                     <td>Çeyrek Yeni</td>
                     <td><div class="input-container"><input type="number" id="input-ceyrek-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-ceyrek-yeni-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-ceyrek-yeni-alis">₺0,00</span><span id="diff-ceyrek-yeni-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-ceyrek-yeni-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-ceyrek-yeni-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-ceyrek-yeni-satis">₺0,00</span><span id="diff-ceyrek-yeni-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-ceyrek-yeni-satis">₺0,00</td>
                 </tr>
                 <tr data-id="yarim-eski">
                     <td class="drag-col">☰</td>
                     <td>Yarım Eski</td>
                     <td><div class="input-container"><input type="number" id="input-yarim-eski" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-yarim-eski-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-yarim-eski-alis">₺0,00</span><span id="diff-yarim-eski-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-yarim-eski-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-yarim-eski-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-yarim-eski-satis">₺0,00</span><span id="diff-yarim-eski-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-yarim-eski-satis">₺0,00</td>
                 </tr>
                 <tr data-id="yarim-yeni">
                     <td class="drag-col">☰</td>
                     <td>Yarım Yeni</td>
                     <td><div class="input-container"><input type="number" id="input-yarim-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-yarim-yeni-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-yarim-yeni-alis">₺0,00</span><span id="diff-yarim-yeni-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-yarim-yeni-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-yarim-yeni-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-yarim-yeni-satis">₺0,00</span><span id="diff-yarim-yeni-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-yarim-yeni-satis">₺0,00</td>
                 </tr>
                 <tr data-id="tam-eski">
                     <td class="drag-col">☰</td>
                     <td>Eski Tam</td>
                     <td><div class="input-container"><input type="number" id="input-tam-eski" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-tam-eski-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-tam-eski-alis">₺0,00</span><span id="diff-tam-eski-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-tam-eski-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-tam-eski-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-tam-eski-satis">₺0,00</span><span id="diff-tam-eski-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-tam-eski-satis">₺0,00</td>
                 </tr>
                 <tr data-id="tam-yeni">
                     <td class="drag-col">☰</td>
                     <td>Tam Altın (Yeni)</td>
                     <td><div class="input-container"><input type="number" id="input-tam-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-tam-yeni-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-tam-yeni-alis">₺0,00</span><span id="diff-tam-yeni-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-tam-yeni-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-tam-yeni-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-tam-yeni-satis">₺0,00</span><span id="diff-tam-yeni-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-tam-yeni-satis">₺0,00</td>
                 </tr>
                 <tr data-id="ata">
                     <td class="drag-col">☰</td>
                     <td>Ata Altın</td>
                     <td><div class="input-container"><input type="number" id="input-ata" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-ata-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-ata-alis">₺0,00</span><span id="diff-ata-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-ata-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-ata-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-ata-satis">₺0,00</span><span id="diff-ata-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-ata-satis">₺0,00</td>
                 </tr>
                 <tr data-id="ayar14">
                     <td class="drag-col">☰</td>
                     <td>14 Ayar Altın</td>
                     <td><div class="input-container"><input type="number" id="input-ayar14" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color" id="price-ayar14-alis">₺0,00</td>
+                    <td class="money alis-color"><span id="price-ayar14-alis">₺0,00</span><span id="diff-ayar14-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-ayar14-alis">₺0,00</td>
-                    <td class="money satis-color" id="price-ayar14-satis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-ayar14-satis">₺0,00</span><span id="diff-ayar14-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-ayar14-satis">₺0,00</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <div style="margin-top: 25px; text-align: center; font-size: 0.75rem; color: #666;">
+    <div style="margin-top: 25px; text-align: center; font-size: 0.75rem; color: var(--text-sub);">
         Veriler anlikaltinfiyatlari.com üzerinden anlık olarak sağlanmaktadır. Herhangi bir ticari kazanç amaçlı yapılmamıştır.
     </div>
 </div>
 
 <script>
+    let eskiFiyatlar = {};
+
     let canlıFiyatlar = {
         has_alis: 0, has_satis: 0,
         gram_alis: 0, gram_satis: 0,
@@ -321,7 +465,9 @@
         } catch (e) { return; }
 
         if (data) {
-            // Canlı fiyatları eşleme
+            let simdi = new Date();
+            document.getElementById('sonGuncellemeSaat').innerText = simdi.toTimeString().split(' ')[0];
+
             canlıFiyatlar.has_alis = parseFloat(data.HAS?.alis || 0);
             canlıFiyatlar.has_satis = parseFloat(data.HAS?.satis || 0);
             canlıFiyatlar.gram_alis = parseFloat(data.GRAM?.alis || 0);
@@ -345,7 +491,6 @@
             canlıFiyatlar.ayar14_alis = parseFloat(data.AYAR14?.alis || 0);
             canlıFiyatlar.ayar14_satis = parseFloat(data.AYAR14?.satis || 0);
 
-            // Fiyatları ekrana basma
             basFiyat('has', canlıFiyatlar.has_alis, canlıFiyatlar.has_satis);
             basFiyat('gram', canlıFiyatlar.gram_alis, canlıFiyatlar.gram_satis);
             basFiyat('bilezik', canlıFiyatlar.bilezik_alis, canlıFiyatlar.bilezik_satis);
@@ -359,15 +504,63 @@
             basFiyat('ayar14', canlıFiyatlar.ayar14_alis, canlıFiyatlar.ayar14_satis);
             
             hesapla();
+            filtreleSifirlari();
         }
     });
 
     function basFiyat(id, alis, satis) {
-        document.getElementById(`price-${id}-alis`).innerText = formatPara(alis);
-        document.getElementById(`price-${id}-satis`).innerText = formatPara(satis);
+        let elAlis = document.getElementById(`price-${id}-alis`);
+        let elSatis = document.getElementById(`price-${id}-satis`);
+        let elDiffAlis = document.getElementById(`diff-${id}-alis`);
+        let elDiffSatis = document.getElementById(`diff-${id}-satis`);
+
+        if(elAlis && elSatis) {
+            durumsalRenkUygula(elAlis.parentElement, id + '_alis', alis, elAlis, elDiffAlis);
+            durumsalRenkUygula(elSatis.parentElement, id + '_satis', satis, elSatis, elDiffSatis);
+        }
     }
 
-    // LocalStorage için Değerleri Kaydedip Hesaplayan Yeni Ara Fonksiyon
+    function durumsalRenkUygula(tdElement, key, yeniFiyat, spanPrice, spanDiff) {
+        let eskiFiyat = eskiFiyatlar[key];
+
+        if (eskiFiyat !== undefined && eskiFiyat !== yeniFiyat) {
+            tdElement.classList.remove('state-up', 'state-down');
+            void tdElement.offsetWidth; 
+            
+            let fark = yeniFiyat - eskiFiyat;
+            let isaret = fark > 0 ? "+" : "";
+            
+            if (spanDiff) {
+                spanDiff.innerText = isaret + fark.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                spanDiff.classList.remove('change-up', 'change-down');
+                spanDiff.classList.add(fark > 0 ? 'change-up' : 'change-down');
+            }
+
+            if (yeniFiyat > eskiFiyat) {
+                tdElement.classList.add('state-up'); 
+            } else if (yeniFiyat < eskiFiyat) {
+                tdElement.classList.add('state-down'); 
+            }
+        }
+
+        spanPrice.innerText = formatPara(yeniFiyat);
+        eskiFiyatlar[key] = yeniFiyat;
+    }
+
+    function temaDegistir() {
+        let themeSwitch = document.getElementById('toggle-theme');
+        let label = document.getElementById('theme-label');
+        if (themeSwitch.checked) {
+            document.documentElement.setAttribute('data-theme', 'light');
+            label.innerText = "Karanlık Mod";
+            localStorage.setItem('panelTemaDurum', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            label.innerText = "Aydınlık Mod";
+            localStorage.setItem('panelTemaDurum', 'dark');
+        }
+    }
+
     function kaydetVeHesapla() {
         let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
         urunler.forEach(u => {
@@ -377,6 +570,7 @@
             }
         });
         hesapla();
+        filtreleSifirlari();
     }
 
     function hesapla() {
@@ -413,7 +607,7 @@
             genelSatis += t_satis;
         });
 
-        document.getElementById('toplamServetAlis').innerText = formatPara(genelAlis);
+        document.getElementById('tophamServetAlis').innerText = formatPara(genelAlis);
         document.getElementById('toplamServetSatis').innerText = formatPara(genelSatis);
     }
 
@@ -421,31 +615,51 @@
         return "₺" + deger.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Onay Mekanizmalı Sıfırlama Fonksiyonu
+    function filtreleSifirlari() {
+        let switchEl = document.getElementById('toggle-zero');
+        if(!switchEl) return;
+        
+        let gizle = switchEl.checked;
+        localStorage.setItem('sifirlariGizleDurum', gizle);
+
+        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        urunler.forEach(u => {
+            let inputEl = document.getElementById(`input-${u}`);
+            if(inputEl) {
+                let miktar = parseFloat(inputEl.value || 0);
+                let satir = inputEl.closest('tr');
+                if(satir) {
+                    if(gizle && miktar === 0) {
+                        satir.style.display = 'none';
+                    } else {
+                        satir.style.display = '';
+                    }
+                }
+            }
+        });
+    }
+
     function portfoyuSifirla() {
         if (confirm("Girdiğiniz tüm miktarlar sıfırlanacak ve tablo düzeni orijinal haline getirilecektir. Emin misiniz?")) {
             let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
             
-            // 1. LocalStorage'ı temizle
             urunler.forEach(u => localStorage.removeItem(`input-${u}`));
             localStorage.removeItem('altinTabloSiralamasi');
+            localStorage.removeItem('sifirlariGizleDurum');
+            localStorage.removeItem('panelTemaDurum');
             
-            // 2. Input değerlerini sıfırla
             urunler.forEach(u => {
                 let el = document.getElementById(`input-${u}`);
                 if (el) el.value = 0;
             });
             
-            // 3. Tabloyu yenile (Sıralamayı varsayılana döndürmek için sayfayı yeniden yüklemek en temiz yoldur)
             window.location.reload();
         }
     }
 
-    // SortableJS ve LocalStorage Veri Yükleme İşlemleri
     document.addEventListener("DOMContentLoaded", function() {
         const tbody = document.getElementById('sortable-list');
         
-        // 1. Kayıtlı Değerleri Geri Yükle
         let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
         urunler.forEach(u => {
             let kayitliDeger = localStorage.getItem(`input-${u}`);
@@ -455,7 +669,6 @@
             }
         });
 
-        // 2. Kayıtlı Sıralamayı Geri Yükle
         const savedOrder = localStorage.getItem('altinTabloSiralamasi');
         if (savedOrder) {
             const orderArray = JSON.parse(savedOrder);
@@ -465,20 +678,39 @@
             });
         }
 
-        // 3. Sıralama Kütüphanesini Başlat (Sadece sol taşıma kolonundan tutulup taşınabilir yapıldı)
+        let kayitliSwitch = localStorage.getItem('sifirlariGizleDurum');
+        let switchEl = document.getElementById('toggle-zero');
+        if (kayitliSwitch === 'true' && switchEl) {
+            switchEl.checked = true;
+        }
+
+        // Tema Hafızası ve İlk Açılış Kontrolü (Default Night Mod)
+        let kayitliTema = localStorage.getItem('panelTemaDurum');
+        let themeSwitch = document.getElementById('toggle-theme');
+        let themeLabel = document.getElementById('theme-label');
+        
+        if (kayitliTema === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            if (themeSwitch) themeSwitch.checked = true;
+            if (themeLabel) themeLabel.innerText = "Karanlık Mod";
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            if (themeSwitch) themeSwitch.checked = false;
+            if (themeLabel) themeLabel.innerText = "Aydınlık Mod";
+        }
+
         new Sortable(tbody, {
             animation: 150,
             handle: '.drag-col',
             ghostClass: 'sortable-ghost',
             onEnd: function() {
-                // Sıralama bittiğinde yeni düzeni kaydet
                 const yeniSiralama = Array.from(tbody.children).map(row => row.dataset.id);
                 localStorage.setItem('altinTabloSiralamasi', JSON.stringify(yeniSiralama));
             }
         });
 
-        // Değerler yüklendikten sonra ilk hesaplamayı tetikle
         hesapla();
+        filtreleSifirlari();
     });
 </script>
 </body>
