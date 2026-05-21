@@ -2,15 +2,31 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Altın Hesaplama Paneli - Kapalıçarşı Anlık Altın Fiyatları</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23f1c40f' d='M416 480c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V32C0 14.3 14.3 0 32 0h240l144 144v336zM288 32v128h128L288 32zM128 320v96c0 8.8 7.2 16 16 16s16-7.2 16-16v-96c0-8.8-7.2-16-16-16s16 7.2 16 16zm96-64v160c0 8.8 7.2 16 16 16s16-7.2 16-16V256c0-8.8-7.2-16-16-16s16 7.2 16 16zm96 96v64c0 8.8 7.2 16 16 16s16-7.2 16-16v-64c0-8.8-7.2-16-16-16s16 7.2 16 16z'/%3E%3C/svg%3E">
+    <meta name="description" content="Anlık Kapalıçarşı altın fiyatlarını takip edin, elinizdeki altınların güncel bozdurma ve alış değerlerini saniyeler içinde hesaplayın.">
+    <meta name="keywords" content="altın fiyatları, canlı altın hesaplama, Kapalıçarşı altın, gram altın hesapla, altın portföy, anlık altın fiyatı">
+    <meta name="author" content="Altın Takip Paneli - Tomarski">
+    <meta name="copyright" content="© 2026 Altın Hesaplama Paneli - Tomarski">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    
+    <meta property="og:title" content="Altın Hesaplama Paneli">
+    <meta property="og:description" content="Anlık altın fiyatları ve portföy hesaplama aracı.">
+    <meta property="og:type" content="website">
 
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23f1c40f' d='M416 480c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V32C0 14.3 14.3 0 32 0h240l144 144v336zM288 32v128h128L288 32zM128 320v96c0 8.8 7.2 16 16 16s16-7.2 16-16v-96c0-8.8-7.2-16-16-16s16 7.2 16 16zm96-64v160c0 8.8 7.2 16 16 16s16-7.2 16-16V256c0-8.8-7.2-16-16-16s16 7.2 16 16zm96 96v64c0 8.8 7.2 16 16 16s16-7.2 16-16v-64c0-8.8-7.2-16-16-16s16 7.2 16 16z'/%3E%3C/svg%3E">
+    
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+</head>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        /* VARSAYILAN DEĞİŞKENLER (KARANLIK MOD) */
         :root {
             --bg-body: #121212;
             --bg-container: #1e1e1e;
@@ -27,7 +43,6 @@
             --flash-down-end: rgba(231, 76, 60, 0.15);
         }
 
-        /* AYDINLIK MOD DEĞİŞKENLERİ */
         [data-theme="light"] {
             --bg-body: #f4f6f9;
             --bg-container: #ffffff;
@@ -69,7 +84,6 @@
         .live-time { font-size: 0.75rem; color: var(--text-sub); font-family: monospace; margin-left: 5px; vertical-align: middle; }
         @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
         
-        /* RESPONSIVE TOPLAM KUTULARI */
         .total-container { 
             display: flex; 
             flex-direction: column; 
@@ -94,7 +108,6 @@
         .price-alis { color: #2ecc71; }
         .price-satis { color: #f1c40f; }
 
-        /* MOBİL UYUMLU AKSİYON ALANI (SWITCHLER & SIFIRLA) */
         .action-container {
             display: flex;
             justify-content: space-between;
@@ -227,7 +240,6 @@
         .satis-color { color: #f1c40f; }
         .alis-color { color: #2ecc71; }
 
-        /* Değişim Miktarı CSS Alanı */
         .change-amount {
             display: block;
             font-size: 0.72rem;
@@ -238,7 +250,6 @@
         .change-up { color: #2ecc71; }
         .change-down { color: #e74c3c; }
 
-        /* Durumsal Flaşör Animasyonları */
         .state-up { animation: flashGreenToLight 0.8s ease-out forwards; }
         .state-down { animation: flashRedToLight 0.8s ease-out forwards; }
 
@@ -251,10 +262,8 @@
             100% { background-color: var(--flash-down-end); }
         }
 
-        /* Sürükleme Görsel Efektleri */
         tbody tr.sortable-ghost { opacity: 0.3; background-color: rgba(241, 196, 15, 0.15); }
 
-        /* MASAÜSTÜ SÜRÜMÜ */
         @media (min-width: 600px) {
             body { padding: 20px; }
             .container { padding: 25px; margin: 30px auto; }
@@ -285,7 +294,7 @@
     <div class="total-container">
         <div class="total-box box-alis">
             <div class="total-title title-alis">TOPLAM BOZDURMA DEĞERİ (ALIŞ)</div>
-            <div class="total-price price-alis" id="tophamServetAlis">₺0,00</div>
+            <div class="total-price price-alis" id="toplamServetAlis">₺0,00</div>
         </div>
         <div class="total-box box-satis">
             <div class="total-title title-satis">GÜNCEL YENİDEN ALIM DEĞERİ (SATIŞ)</div>
@@ -300,7 +309,7 @@
                     <input type="checkbox" id="toggle-zero" onchange="filtreleSifirlari()">
                     <span class="slider"></span>
                 </div>
-                <span class="switch-label">Miktarı 0 Olanları Gizle</span>
+                <span class="switch-label">Boş Olanları Gizle</span>
             </label>
 
             <label class="switch-wrapper" for="toggle-theme">
@@ -610,7 +619,7 @@
             genelSatis += t_satis;
         });
 
-        document.getElementById('tophamServetAlis').innerText = formatPara(genelAlis);
+        document.getElementById('toplamServetAlis').innerText = formatPara(genelAlis);
         document.getElementById('toplamServetSatis').innerText = formatPara(genelSatis);
     }
 
