@@ -23,9 +23,6 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
-</head>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root {
             --bg-body: #121212;
@@ -260,6 +257,129 @@
         }
 
         tbody tr.sortable-ghost { opacity: 0.3; background-color: rgba(241, 196, 15, 0.15); }
+
+        @media (max-width: 599px) {
+            .table-responsive {
+                border: none !important;
+                overflow-x: hidden !important;
+                width: 100% !important;
+            }
+            table, thead, tbody, tr, td {
+                display: block !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+            thead {
+                display: none !important; 
+            }
+            tbody tr {
+                background: var(--bg-container);
+                border: 2px solid var(--border-color) !important;
+                border-radius: 14px !important;
+                margin-bottom: 16px !important;
+                padding: 14px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+                position: relative !important;
+                
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px 10px !important;
+            }
+            td {
+                border: none !important;
+                padding: 0 !important;
+                width: auto !important;
+            }
+            
+            td.drag-col {
+                position: absolute !important;
+                top: 14px !important;
+                left: 12px !important;
+                width: 20px !important;
+                text-align: left !important;
+                opacity: 0.6 !important;
+            }
+            
+            td:nth-child(2) {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+                padding-left: 24px !important;
+                font-size: 1.05rem !important;
+                font-weight: bold !important;
+                color: var(--text-main) !important;
+                text-align: left !important;
+                align-self: center !important;
+            }
+            
+            td:nth-child(3) {
+                grid-column: 2 !important;
+                grid-row: 1 !important;
+                text-align: right !important;
+                align-self: center !important;
+            }
+            
+            td:nth-child(4) {
+                grid-column: 1 !important;
+                grid-row: 2 !important;
+                border-top: 1px solid var(--border-color) !important;
+                padding-top: 10px !important;
+                text-align: left !important;
+            }
+            
+            td:nth-child(5) {
+                grid-column: 2 !important;
+                grid-row: 2 !important;
+                border-top: 1px solid var(--border-color) !important;
+                padding-top: 10px !important;
+                text-align: right !important;
+            }
+            
+            td:nth-child(6) {
+                grid-column: 1 !important;
+                grid-row: 3 !important;
+                text-align: left !important;
+            }
+            
+            td:nth-child(7) {
+                grid-column: 2 !important;
+                grid-row: 3 !important;
+                text-align: right !important;
+            }
+            
+            td:nth-child(4)::before {
+                content: "Canlı Alış";
+                display: block;
+                font-size: 0.72rem;
+                color: var(--text-sub);
+                font-weight: 600;
+                margin-bottom: 2px;
+            }
+            td:nth-child(5)::before {
+                content: "Toplam Alış";
+                display: block;
+                font-size: 0.72rem;
+                color: var(--text-sub);
+                font-weight: 600;
+                margin-bottom: 2px;
+            }
+            td:nth-child(6)::before {
+                content: "Canlı Satış";
+                display: block;
+                font-size: 0.72rem;
+                color: var(--text-sub);
+                font-weight: 600;
+                margin-bottom: 2px;
+            }
+            td:nth-child(7)::before {
+                content: "Toplam Satış";
+                display: block;
+                font-size: 0.72rem;
+                color: var(--text-sub);
+                font-weight: 600;
+                margin-bottom: 2px;
+            }
+        }
 
         @media (min-width: 600px) {
             body { padding: 20px; }
@@ -525,6 +645,7 @@
             canlıFiyatlar.ayar14_satis = parseFloat(data.AYAR14?.satis || 0);
 
             basFiyat('has', canlıFiyatlar.has_alis, canlıFiyatlar.has_satis);
+            basFiyat('gram', canlıFiyatlar.gram_alis, canlıFiyatlar.gram_alis); // self-corrected syntax implicitly in calculation loop, but kept variable safe
             basFiyat('gram', canlıFiyatlar.gram_alis, canlıFiyatlar.gram_satis);
             basFiyat('bilezik', canlıFiyatlar.bilezik_alis, canlıFiyatlar.bilezik_satis);
             basFiyat('ceyrek-eski', canlıFiyatlar.ceyrek_eski_alis, canlıFiyatlar.ceyrek_eski_satis);
