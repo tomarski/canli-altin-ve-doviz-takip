@@ -123,7 +123,6 @@
             gap: 15px;
         }
         
-        /* Toggle Switch Tasarımı */
         .switch-wrapper {
             display: flex;
             align-items: center;
@@ -195,7 +194,6 @@
             transform: scale(0.95);
         }
         
-        /* RESPONSIVE TABLO ALANI */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -209,7 +207,6 @@
         th, td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; transition: background-color 0.4s ease, color 0.3s ease; }
         th { background-color: var(--th-bg); color: var(--text-main); font-weight: bold; }
         
-        /* Taşıma kolonu tasarımı */
         th.drag-col, td.drag-col { text-align: center; width: 40px; padding: 10px 5px; color: var(--text-sub); opacity: 0.4; user-select: none; }
         td.drag-col { font-size: 1.1rem; cursor: grab; }
         td.drag-col:active { cursor: grabbing; color: #f1c40f; opacity: 1; }
@@ -280,6 +277,20 @@
                 color: #fff;
             }
         }
+
+        .footer-github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #f1c40f;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            margin-top: 5px;
+        }
+        .footer-github-link:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -287,9 +298,9 @@
 <div class="container">
     <h1>
         <span class="live-indicator"></span>Profesyonel Altın Portföy Paneli
-        <span class="live-time" id="sonGuncellemeSaat">--:--:--</span>
     </h1>
     <p style="color: var(--text-sub); margin: 0; font-size: 0.8rem;">Kapalıçarşı Anlık Altın Fiyatları</p>
+    <div class="live-time" id="sonGuncellemeSaat" style="margin-top: 5px; display: block;">--:--:--</div>
 
     <div class="total-container">
         <div class="total-box box-alis">
@@ -309,7 +320,7 @@
                     <input type="checkbox" id="toggle-zero" onchange="filtreleSifirlari()">
                     <span class="slider"></span>
                 </div>
-                <span class="switch-label">Boş Olanları Gizle</span>
+                <span class="switch-label" id="label-zero">Boş Olanları Gizle</span>
             </label>
 
             <label class="switch-wrapper" for="toggle-theme">
@@ -317,7 +328,7 @@
                     <input type="checkbox" id="toggle-theme" onchange="temaDegistir()">
                     <span class="slider"></span>
                 </div>
-                <span class="switch-label" id="theme-label">Aydınlık Mod</span>
+                <span class="switch-label" id="theme-label">Aydınlık Modu Aç</span>
             </label>
         </div>
         
@@ -342,7 +353,7 @@
             <tbody id="sortable-list">
                 <tr data-id="has">
                     <td class="drag-col">☰</td>
-                    <td>Has Altın (24 Ayar)</td>
+                    <td>Has Altın</td>
                     <td><div class="input-container"><input type="number" id="input-has" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color"><span id="price-has-alis">₺0,00</span><span id="diff-has-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-has-alis">₺0,00</td>
@@ -360,7 +371,7 @@
                 </tr>
                 <tr data-id="bilezik">
                     <td class="drag-col">☰</td>
-                    <td>22 Ayar Bilezik</td>
+                    <td>22 Ayar Altın</td>
                     <td><div class="input-container"><input type="number" id="input-bilezik" value="0" step="0.01" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color"><span id="price-bilezik-alis">₺0,00</span><span id="diff-bilezik-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-bilezik-alis">₺0,00</td>
@@ -378,7 +389,7 @@
                 </tr>
                 <tr data-id="ceyrek-yeni">
                     <td class="drag-col">☰</td>
-                    <td>Çeyrek Yeni</td>
+                    <td>Çeyrek Altın</td>
                     <td><div class="input-container"><input type="number" id="input-ceyrek-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color"><span id="price-ceyrek-yeni-alis">₺0,00</span><span id="diff-ceyrek-yeni-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-ceyrek-yeni-alis">₺0,00</td>
@@ -396,7 +407,7 @@
                 </tr>
                 <tr data-id="yarim-yeni">
                     <td class="drag-col">☰</td>
-                    <td>Yarım Yeni</td>
+                    <td>Yarım Altın</td>
                     <td><div class="input-container"><input type="number" id="input-yarim-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color"><span id="price-yarim-yeni-alis">₺0,00</span><span id="diff-yarim-yeni-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-yarim-yeni-alis">₺0,00</td>
@@ -405,7 +416,7 @@
                 </tr>
                 <tr data-id="tam-eski">
                     <td class="drag-col">☰</td>
-                    <td>Eski Tam</td>
+                    <td>Tam Eski</td>
                     <td><div class="input-container"><input type="number" id="input-tam-eski" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color"><span id="price-tam-eski-alis">₺0,00</span><span id="diff-tam-eski-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-tam-eski-alis">₺0,00</td>
@@ -414,7 +425,7 @@
                 </tr>
                 <tr data-id="tam-yeni">
                     <td class="drag-col">☰</td>
-                    <td>Tam Altın (Yeni)</td>
+                    <td>Tam Altın</td>
                     <td><div class="input-container"><input type="number" id="input-tam-yeni" value="0" step="1" oninput="kaydetVeHesapla()"></div></td>
                     <td class="money alis-color"><span id="price-tam-yeni-alis">₺0,00</span><span id="diff-tam-yeni-alis" class="change-amount"></span></td>
                     <td class="money alis-color" id="total-tam-yeni-alis">₺0,00</td>
@@ -445,6 +456,12 @@
 
     <div style="margin-top: 25px; text-align: center; font-size: 0.75rem; color: var(--text-sub);">
         Veriler anlikaltinfiyatlari.com üzerinden anlık olarak sağlanmaktadır. Herhangi bir ticari kazanç amaçlı yapılmamıştır.
+        <br><br>
+        © 2026 Tomarski 
+        <br>
+        <a href="https://github.com/tomarski" target="_blank" class="footer-github-link">
+            <svg height="14" width="14" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg> GitHub
+        </a>
     </div>
 </div>
 
@@ -478,7 +495,11 @@
 
         if (data) {
             let simdi = new Date();
-            document.getElementById('sonGuncellemeSaat').innerText = simdi.toTimeString().split(' ')[0];
+            let gun = String(simdi.getDate()).padStart(2, '0');
+            let ay = String(simdi.getMonth() + 1).padStart(2, '0');
+            let yil = simdi.getFullYear();
+            let saat = simdi.toTimeString().split(' ')[0];
+            document.getElementById('sonGuncellemeSaat').innerText = 'Son güncelleme tarihi: ' + gun + '.' + ay + '.' + yil + ' ' + saat;
 
             canlıFiyatlar.has_alis = parseFloat(data.HAS?.alis || 0);
             canlıFiyatlar.has_satis = parseFloat(data.HAS?.satis || 0);
@@ -564,11 +585,11 @@
         let label = document.getElementById('theme-label');
         if (themeSwitch.checked) {
             document.documentElement.setAttribute('data-theme', 'light');
-            label.innerText = "Karanlık Mod";
+            label.innerText = "Karanlık Moda Dön";
             localStorage.setItem('panelTemaDurum', 'light');
         } else {
             document.documentElement.removeAttribute('data-theme');
-            label.innerText = "Aydınlık Mod";
+            label.innerText = "Aydınlık Modu Aç";
             localStorage.setItem('panelTemaDurum', 'dark');
         }
     }
@@ -629,10 +650,15 @@
 
     function filtreleSifirlari() {
         let switchEl = document.getElementById('toggle-zero');
+        let labelEl = document.getElementById('label-zero');
         if(!switchEl) return;
         
         let gizle = switchEl.checked;
         localStorage.setItem('sifirlariGizleDurum', gizle);
+
+        if(labelEl) {
+            labelEl.innerText = gizle ? "Boş Olanları Getir" : "Boş Olanları Gizle";
+        }
 
         let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
         urunler.forEach(u => {
@@ -696,7 +722,6 @@
             switchEl.checked = true;
         }
 
-        // Tema Hafızası ve İlk Açılış Kontrolü (Default Night Mod)
         let kayitliTema = localStorage.getItem('panelTemaDurum');
         let themeSwitch = document.getElementById('toggle-theme');
         let themeLabel = document.getElementById('theme-label');
@@ -704,11 +729,11 @@
         if (kayitliTema === 'light') {
             document.documentElement.setAttribute('data-theme', 'light');
             if (themeSwitch) themeSwitch.checked = true;
-            if (themeLabel) themeLabel.innerText = "Karanlık Mod";
+            if (themeLabel) themeLabel.innerText = "Karanlık Moda Dön";
         } else {
             document.documentElement.removeAttribute('data-theme');
             if (themeSwitch) themeSwitch.checked = false;
-            if (themeLabel) themeLabel.innerText = "Aydınlık Mod";
+            if (themeLabel) themeLabel.innerText = "Aydınlık Modu Aç";
         }
 
         new Sortable(tbody, {
