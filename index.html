@@ -411,6 +411,10 @@
         .footer-github-link:hover {
             opacity: 0.8;
         }
+        
+        .hidden-row {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -645,7 +649,6 @@
             canlıFiyatlar.ayar14_satis = parseFloat(data.AYAR14?.satis || 0);
 
             basFiyat('has', canlıFiyatlar.has_alis, canlıFiyatlar.has_satis);
-            basFiyat('gram', canlıFiyatlar.gram_alis, canlıFiyatlar.gram_alis); // self-corrected syntax implicitly in calculation loop, but kept variable safe
             basFiyat('gram', canlıFiyatlar.gram_alis, canlıFiyatlar.gram_satis);
             basFiyat('bilezik', canlıFiyatlar.bilezik_alis, canlıFiyatlar.bilezik_satis);
             basFiyat('ceyrek-eski', canlıFiyatlar.ceyrek_eski_alis, canlıFiyatlar.ceyrek_eski_satis);
@@ -789,9 +792,9 @@
                 let satir = inputEl.closest('tr');
                 if(satir) {
                     if(gizle && miktar === 0) {
-                        satir.style.display = 'none';
+                        satir.classList.add('hidden-row'); // Inline style yerine class eklendi
                     } else {
-                        satir.style.display = '';
+                        satir.classList.remove('hidden-row'); // Görünür yapmak için class kaldırıldı
                     }
                 }
             }
