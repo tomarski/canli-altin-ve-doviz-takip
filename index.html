@@ -666,7 +666,6 @@
             basFiyat('ayar14', canlıFiyatlar.ayar14_alis, canlıFiyatlar.ayar14_satis);
             
             hesapla();
-            filtreleSifirlari();
         }
     });
 
@@ -797,9 +796,9 @@
                 let satir = inputEl.closest('tr');
                 if(satir) {
                     if(gizle && miktar === 0) {
-                        satir.classList.add('hidden-row'); // Inline style yerine class eklendi
+                        satir.classList.add('hidden-row');
                     } else {
-                        satir.classList.remove('hidden-row'); // Görünür yapmak için class kaldırıldı
+                        satir.classList.remove('hidden-row');
                     }
                 }
             }
