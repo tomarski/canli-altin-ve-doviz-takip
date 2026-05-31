@@ -498,14 +498,14 @@
                     <td class="money satis-color"><span id="price-gram-satis">₺0,00</span><span id="diff-gram-satis" class="change-amount"></span></td>
                     <td class="money satis-color" id="total-gram-satis">₺0,00</td>
                 </tr>
-                <tr data-id="bilezik">
+                <tr data-id="ayar22">
                     <td class="drag-col">☰</td>
                     <td>22 Ayar Altın</td>
-                    <td><div class="input-container"><input type="number" id="input-bilezik" value="0" step="0.01" inputmode="decimal" onfocus="inputOdaklan(this)" onblur="inputKayıp(this)" oninput="kaydetVeHesapla()"></div></td>
-                    <td class="money alis-color"><span id="price-bilezik-alis">₺0,00</span><span id="diff-bilezik-alis" class="change-amount"></span></td>
-                    <td class="money alis-color" id="total-bilezik-alis">₺0,00</td>
-                    <td class="money satis-color"><span id="price-bilezik-satis">₺0,00</span><span id="diff-bilezik-satis" class="change-amount"></span></td>
-                    <td class="money satis-color" id="total-bilezik-satis">₺0,00</td>
+                    <td><div class="input-container"><input type="number" id="input-ayar22" value="0" step="0.01" inputmode="decimal" onfocus="inputOdaklan(this)" onblur="inputKayıp(this)" oninput="kaydetVeHesapla()"></div></td>
+                    <td class="money alis-color"><span id="price-ayar22-alis">₺0,00</span><span id="diff-ayar22-alis" class="change-amount"></span></td>
+                    <td class="money alis-color" id="total-ayar22-alis">₺0,00</td>
+                    <td class="money satis-color"><span id="price-ayar22-satis">₺0,00</span><span id="diff-ayar22-satis" class="change-amount"></span></td>
+                    <td class="money satis-color" id="total-ayar22-satis">₺0,00</td>
                 </tr>
                 <tr data-id="ceyrek-eski">
                     <td class="drag-col">☰</td>
@@ -600,7 +600,7 @@
     let canlıFiyatlar = {
         has_alis: 0, has_satis: 0,
         gram_alis: 0, gram_satis: 0,
-        bilezik_alis: 0, bilezik_satis: 0,
+        ayar22_alis: 0, ayar22_satis: 0,
         ceyrek_eski_alis: 0, ceyrek_eski_satis: 0,
         ceyrek_yeni_alis: 0, ceyrek_yeni_satis: 0,
         yarim_eski_alis: 0, yarim_eski_satis: 0,
@@ -634,8 +634,8 @@
             canlıFiyatlar.has_satis = parseFloat(data.HAS?.satis || 0);
             canlıFiyatlar.gram_alis = parseFloat(data.GRAM?.alis || 0);
             canlıFiyatlar.gram_satis = parseFloat(data.GRAM?.satis || 0);
-            canlıFiyatlar.bilezik_alis = parseFloat(data.AYAR22?.alis || 0);
-            canlıFiyatlar.bilezik_satis = parseFloat(data.AYAR22?.satis || 0);
+            canlıFiyatlar.ayar22_alis = parseFloat(data.AYAR22?.alis || 0);
+            canlıFiyatlar.ayar22_satis = parseFloat(data.AYAR22?.satis || 0);
             canlıFiyatlar.ceyrek_eski_alis = parseFloat(data.CEYREK_ESKI?.alis || 0);
             canlıFiyatlar.ceyrek_eski_satis = parseFloat(data.CEYREK_ESKI?.satis || 0);
             canlıFiyatlar.ceyrek_yeni_alis = parseFloat(data.CEYREK?.alis || 0);
@@ -655,7 +655,7 @@
 
             basFiyat('has', canlıFiyatlar.has_alis, canlıFiyatlar.has_satis);
             basFiyat('gram', canlıFiyatlar.gram_alis, canlıFiyatlar.gram_satis);
-            basFiyat('bilezik', canlıFiyatlar.bilezik_alis, canlıFiyatlar.bilezik_satis);
+            basFiyat('ayar22', canlıFiyatlar.ayar22_alis, canlıFiyatlar.ayar22_satis);
             basFiyat('ceyrek-eski', canlıFiyatlar.ceyrek_eski_alis, canlıFiyatlar.ceyrek_eski_satis);
             basFiyat('ceyrek-yeni', canlıFiyatlar.ceyrek_yeni_alis, canlıFiyatlar.ceyrek_yeni_satis);
             basFiyat('yarim-eski', canlıFiyatlar.yarim_eski_alis, canlıFiyatlar.yarim_eski_satis);
@@ -736,7 +736,7 @@
     }
 
     function kaydetVeHesapla() {
-        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        let urunler = ['has', 'gram', 'ayar22', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
         urunler.forEach(u => {
             let el = document.getElementById(`input-${u}`);
             if(el) {
@@ -751,7 +751,7 @@
         let m = {
             has: parseFloat(document.getElementById('input-has').value || 0),
             gram: parseFloat(document.getElementById('input-gram').value || 0),
-            bilezik: parseFloat(document.getElementById('input-bilezik').value || 0),
+            ayar22: parseFloat(document.getElementById('input-ayar22').value || 0),
             ceyrek_eski: parseFloat(document.getElementById('input-ceyrek-eski').value || 0),
             ceyrek_yeni: parseFloat(document.getElementById('input-ceyrek-yeni').value || 0),
             yarim_eski: parseFloat(document.getElementById('input-yarim-eski').value || 0),
@@ -765,7 +765,7 @@
         let genelAlis = 0;
         let genelSatis = 0;
 
-        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        let urunler = ['has', 'gram', 'ayar22', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
         
         urunler.forEach(u => {
             let anahtar = u.replace('-', '_');
@@ -801,7 +801,7 @@
             labelEl.innerText = gizle ? "Boş Olanları Getir" : "Boş Olanları Gizle";
         }
 
-        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        let urunler = ['has', 'gram', 'ayar22', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
         urunler.forEach(u => {
             let inputEl = document.getElementById(`input-${u}`);
             if(inputEl) {
@@ -820,7 +820,7 @@
 
     function portfoyuSifirla() {
         if (confirm("Girdiğiniz tüm miktarlar sıfırlanacak ve tablo düzeni orijinal haline getirilecektir. Emin misiniz?")) {
-            let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+            let urunler = ['has', 'gram', 'ayar22', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
             
             urunler.forEach(u => localStorage.removeItem(`input-${u}`));
             localStorage.removeItem('altinTabloSiralamasi');
@@ -839,7 +839,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const tbody = document.getElementById('sortable-list');
         
-        let urunler = ['has', 'gram', 'bilezik', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
+        let urunler = ['has', 'gram', 'ayar22', 'ceyrek-eski', 'ceyrek-yeni', 'yarim-eski', 'yarim-yeni', 'tam-eski', 'tam-yeni', 'ata', 'ayar14'];
         urunler.forEach(u => {
             let kayitliDeger = localStorage.getItem(`input-${u}`);
             let el = document.getElementById(`input-${u}`);
